@@ -1,0 +1,23 @@
+{
+  "task": "update-openclaw-and-plugins",
+  "version_from": "2026.4.9-f1",
+  "version_to": "2026.5.5-f1",
+  "steps": {
+    "research": "done",
+    "update_dockerfile": "done",
+    "update_version_txt": "done",
+    "update_openclaw_json_example": "done",
+    "verify_changes": "done"
+  },
+  "started_at": "2026-05-06T21:30:00+08:00",
+  "last_updated": "2026-05-06T21:45:00+08:00",
+  "versions": {
+    "openclaw": "2026.5.5",
+    "qmd": "2.1.0",
+    "dingtalk": "3.6.1",
+    "qqbot": "1.7.1",
+    "wecom": "3.2.0",
+    "napcat_branch": "NapCat-4.18.1",
+    "seed_version": "2026.5.5-f1"
+  }
+}

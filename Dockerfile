@@ -42,14 +42,14 @@ RUN apt-get update && \
     git config --system url."https://github.com/".insteadOf ssh://git@github.com/ && \
     # 设置 npm 镜像并安装全局包
     npm config set registry https://registry.npmmirror.com && \
-    npm install -g openclaw@2026.4.9 opencode-ai@latest clawhub playwright playwright-extra puppeteer-extra-plugin-stealth @steipete/bird && \
+    npm install -g openclaw@2026.5.5 opencode-ai@latest clawhub playwright playwright-extra puppeteer-extra-plugin-stealth @steipete/bird && \
     # 安装 bun、uv 和 qmd
     curl -fsSL https://bun.sh/install | BUN_INSTALL=/usr/local bash && \
     curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh && \
     # 建立 python3 -> python 链接并安装 websockify
     ln -sf /usr/local/bin/python3 /usr/local/bin/python && \
     /usr/local/bin/python3 -m pip install --no-cache-dir websockify && \
-    npm install -g @tobilu/qmd@1.1.6 && \
+    npm install -g @tobilu/qmd@2.1.0 && \
     # 安装 Playwright 浏览器依赖
     npx playwright install chromium --with-deps && \
     # 清理 apt 缓存
@@ -76,21 +76,21 @@ RUN mkdir -p /home/node/.linuxbrew/Homebrew && \
 ARG CLAWHUB_TOKEN
 RUN if [ -n "$CLAWHUB_TOKEN" ]; then clawhub login --token "$CLAWHUB_TOKEN"; fi && \
   cd /home/node/.openclaw/extensions && \
-  git clone --depth 1 -b v4.17.25 https://github.com/Daiyimo/openclaw-napcat.git napcat && \
+  git clone --depth 1 -b NapCat-4.18.1 https://github.com/Daiyimo/openclaw-napcat.git napcat && \
   cd napcat && \
   npm install --production && \
   timeout 300 openclaw plugins install --dangerously-force-unsafe-install -l . || true && \
   cd /home/node/.openclaw/extensions && \
-  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @soimy/dingtalk || true && \
-  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @tencent-connect/openclaw-qqbot@latest || true && \
-  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @sunnoy/wecom || true && \
+  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @soimy/dingtalk@3.6.1 || true && \
+  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @tencent-connect/openclaw-qqbot@1.7.1 || true && \
+  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @sunnoy/wecom@3.2.0 || true && \
   mkdir -p /home/node/.openclaw /home/node/.openclaw-seed && \
   # 预执行安装命令（容器内需手动交互，此处仅作声明或环境准备）
   #  printf '{\n  "channels": {\n    "feishu": {\n      "enabled": false,\n      "appId": "2222222222222222",\n      "appSecret": "1111111111111111",\n      "accounts": {\n        "default": {\n          "appId": "2222222222222222",\n          "appSecret": "1111111111111111",\n          "name": "OpenClaw Bot"\n        }\n      }\n    }\n  }\n}\n' > /home/node/.openclaw/openclaw.json && \
   # npx -y @larksuite/openclaw-lark-tools install && \
   find /home/node/.openclaw/extensions -name ".git" -type d -exec rm -rf {} + && \
   mv /home/node/.openclaw/extensions /home/node/.openclaw-seed/ && \
-  printf '%s\n' '2026.4.9-f1' > /home/node/.openclaw-seed/extensions/.seed-version && \
+  printf '%s\n' '2026.5.5-f1' > /home/node/.openclaw-seed/extensions/.seed-version && \
   rm -rf /tmp/* /home/node/.npm /home/node/.cache
   
 # 3. 最终配置
