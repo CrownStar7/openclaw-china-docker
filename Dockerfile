@@ -54,13 +54,13 @@ RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
     git config --system url."https://gh.llkk.cc/https://github.com/".insteadOf ssh://git@github.com/ && \
     # 设置 npm 镜像并安装全局包
     npm config set registry ${NPM_REGISTRY} && \
-    npm install -g openclaw@2026.5.5 opencode-ai@latest clawhub playwright playwright-extra puppeteer-extra-plugin-stealth @steipete/bird && \
+    npm install -g openclaw@latest opencode-ai@latest clawhub playwright playwright-extra puppeteer-extra-plugin-stealth @steipete/bird && \
     # 安装 bun (使用 GitHub 代理)、uv 和 qmd
     curl -fsSL https://gh.llkk.cc/https://raw.githubusercontent.com/oven-sh/bun/main/src/cli/install.sh | GITHUB="https://gh.llkk.cc/https://github.com"  BUN_INSTALL=/usr/local bash && \
     ln -sf /usr/local/bin/python3 /usr/local/bin/python && \
     /usr/local/bin/python3 -m pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ && \
     /usr/local/bin/python3 -m pip install --no-cache-dir uv websockify && \
-    npm install -g @tobilu/qmd@2.1.0 && \
+    npm install -g @tobilu/qmd@latest && \
     # 安装 Playwright 浏览器依赖 (使用 npmmirror 镜像加速)
     npx playwright install chromium --with-deps && \
     # 清理 apt 缓存
