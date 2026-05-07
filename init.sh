@@ -383,7 +383,7 @@ QQBOT_RESERVED_FIELDS = {
 
 CHANNEL_INSTALLS = {
     'feishu': {'source': 'npm', 'spec': '@openclaw/feishu', 'installPath': '/home/node/.openclaw/extensions/feishu'},
-    'dingtalk': {'source': 'npm', 'spec': 'https://github.com/soimy/clawdbot-channel-dingtalk.git', 'installPath': '/home/node/.openclaw/extensions/dingtalk'},
+    'dingtalk': {'source': 'npm', 'spec': '@soimy/dingtalk', 'installPath': '/home/node/.openclaw/extensions/dingtalk'},
     'openclaw-qqbot': {'source': 'path', 'sourcePath': '/home/node/.openclaw/openclaw-qqbot', 'installPath': '/home/node/.openclaw/extensions/openclaw-qqbot'},
     'napcat': {'source': 'path', 'sourcePath': '/home/node/.openclaw/extensions/napcat', 'installPath': '/home/node/.openclaw/extensions/napcat'},
     'wecom': {'source': 'npm', 'spec': '@sunnoy/wecom', 'installPath': '/home/node/.openclaw/extensions/wecom'},
@@ -2324,7 +2324,7 @@ install_agent_reach() {
     local pip_mirror=""
     local pip_index_env=""
 
-    if [ "${AGENT_REACH_USE_CN_MIRROR:-false}" = "true" ]; then
+    if [ "${AGENT_REACH_USE_CN_MIRROR:-true}" = "true" ]; then
         github_url="https://gh.llkk.cc/https://github.com/Panniantong/agent-reach/archive/main.zip"
         pip_mirror="-i https://pypi.tuna.tsinghua.edu.cn/simple"
         pip_index_env="export PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple"

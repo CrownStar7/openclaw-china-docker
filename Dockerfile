@@ -13,7 +13,15 @@ ENV BUN_INSTALL="/usr/local" \
     DEBIAN_FRONTEND=noninteractive
 
 # 1. 合并系统依赖安装与全局工具安装，并清理缓存
-RUN apt-get update && \
+# 替换 Debian 源为阿里云镜像加速下载
+RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's|http://deb.debian.org/debian|https://mirrors.aliyun.com/debian|g' /etc/apt/sources.list.d/debian.sources && \
+        sed -i 's|http://security.debian.org/debian-security|https://mirrors.aliyun.com/debian-security|g' /etc/apt/sources.list.d/debian.sources ; \
+    elif [ -f /etc/apt/sources.list ]; then \
+        sed -i 's|http://deb.debian.org/debian|https://mirrors.aliyun.com/debian|g' /etc/apt/sources.list && \
+        sed -i 's|http://security.debian.org/debian-security|https://mirrors.aliyun.com/debian-security|g' /etc/apt/sources.list ; \
+    fi && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     bash \
     ca-certificates \
@@ -43,15 +51,14 @@ RUN apt-get update && \
     # 设置 npm 镜像并安装全局包
     npm config set registry https://registry.npmmirror.com && \
     npm install -g openclaw@2026.5.5 opencode-ai@latest clawhub playwright playwright-extra puppeteer-extra-plugin-stealth @steipete/bird && \
-    # 安装 bun、uv 和 qmd
-    curl -fsSL https://bun.sh/install | BUN_INSTALL=/usr/local bash && \
-    curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh && \
-    # 建立 python3 -> python 链接并安装 websockify
+    # 安装 bun (使用 GitHub 代理)、uv 和 qmd
+    curl -fsSL https://gh.llkk.cc/https://raw.githubusercontent.com/oven-sh/bun/main/src/cli/install.sh | BUN_INSTALL=/usr/local bash && \
     ln -sf /usr/local/bin/python3 /usr/local/bin/python && \
-    /usr/local/bin/python3 -m pip install --no-cache-dir websockify && \
+    /usr/local/bin/python3 -m pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ && \
+    /usr/local/bin/python3 -m pip install --no-cache-dir uv websockify && \
     npm install -g @tobilu/qmd@2.1.0 && \
-    # 安装 Playwright 浏览器依赖
-    npx playwright install chromium --with-deps && \
+    # 安装 Playwright 浏览器依赖 (使用 npmmirror 镜像加速)
+    PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright npx playwright install chromium --with-deps && \
     # 清理 apt 缓存
     apt-get purge -y --auto-remove && \
     apt-get clean && \
@@ -67,16 +74,17 @@ WORKDIR /home/node
 
 # 安装linuxbrew（Homebrew 的 Linux 版本），并配置环境变量
 RUN mkdir -p /home/node/.linuxbrew/Homebrew && \
-    git clone --depth 1 https://github.com/Homebrew/brew /home/node/.linuxbrew/Homebrew && \
+    git clone --depth 1 https://gh.llkk.cc/https://github.com/Homebrew/brew /home/node/.linuxbrew/Homebrew && \
     mkdir -p /home/node/.linuxbrew/bin && \
     ln -s /home/node/.linuxbrew/Homebrew/bin/brew /home/node/.linuxbrew/bin/brew && \
     chown -R node:node /home/node/.linuxbrew && \
     chmod -R g+rwX /home/node/.linuxbrew
 
 ARG CLAWHUB_TOKEN
-RUN if [ -n "$CLAWHUB_TOKEN" ]; then clawhub login --token "$CLAWHUB_TOKEN"; fi && \
+RUN npm config set registry https://registry.npmmirror.com && \
+  if [ -n "$CLAWHUB_TOKEN" ]; then clawhub login --token "$CLAWHUB_TOKEN"; fi && \
   cd /home/node/.openclaw/extensions && \
-  git clone --depth 1 -b NapCat-4.18.1 https://github.com/Daiyimo/openclaw-napcat.git napcat && \
+  git clone --depth 1 -b NapCat-4.18.1 https://gh.llkk.cc/https://github.com/Daiyimo/openclaw-napcat.git napcat && \
   cd napcat && \
   npm install --production && \
   timeout 300 openclaw plugins install --dangerously-force-unsafe-install -l . || true && \
