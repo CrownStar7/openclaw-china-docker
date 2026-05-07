@@ -2321,6 +2321,7 @@ install_agent_reach() {
     log_section "安装 Agent Reach"
 
     local github_url="https://github.com/Panniantong/agent-reach/archive/main.zip"
+    local github_proxy_base="https://gh.llkk.cc/https://github.com/"
     local pip_mirror=""
     local pip_index_env=""
 
@@ -2328,6 +2329,12 @@ install_agent_reach() {
         github_url="https://gh.llkk.cc/https://github.com/Panniantong/agent-reach/archive/main.zip"
         pip_mirror="-i https://pypi.tuna.tsinghua.edu.cn/simple"
         pip_index_env="export PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple"
+
+        if [ -z "${GIT_CONFIG_GLOBAL:-}" ]; then
+            export GIT_CONFIG_GLOBAL=/tmp/.gitconfig-agent-reach
+        fi
+        git config --global --replace-all url."${github_proxy_base}".insteadOf https://github.com/ || true
+        git config --global --replace-all url."${github_proxy_base}".insteadOf ssh://git@github.com/ || true
     fi
 
     if gosu node test -f /home/node/.agent-reach-venv/bin/agent-reach; then

@@ -46,8 +46,9 @@ RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
     locale-gen && \
     # update-locale 在部分 slim 基础镜像中会返回 invalid locale settings，这里改为直接写入默认 locale 配置
     printf 'LANG=en_US.UTF-8\nLANGUAGE=en_US:en\nLC_ALL=en_US.UTF-8\n' > /etc/default/locale && \
-    # 配置 git 使用 HTTPS 替代 SSH
-    git config --system url."https://github.com/".insteadOf ssh://git@github.com/ && \
+    # 配置 git 使用 GitHub 加速代理（覆盖 SSH 与 HTTPS）
+    git config --system url."https://gh.llkk.cc/https://github.com/".insteadOf https://github.com/ && \
+    git config --system url."https://gh.llkk.cc/https://github.com/".insteadOf ssh://git@github.com/ && \
     # 设置 npm 镜像并安装全局包
     npm config set registry https://registry.npmmirror.com && \
     npm install -g openclaw@2026.5.5 opencode-ai@latest clawhub playwright playwright-extra puppeteer-extra-plugin-stealth @steipete/bird && \
