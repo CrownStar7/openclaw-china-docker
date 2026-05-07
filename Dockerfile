@@ -14,7 +14,6 @@ ENV BUN_INSTALL="/usr/local" \
 
 # npm / Playwright 镜像地址（可按需在 build 时覆盖）
 ARG NPM_REGISTRY=https://registry.npmmirror.com
-ARG PLAYWRIGHT_DOWNLOAD_HOST=https://registry.npmmirror.com/-/binary/playwright
 
 # 1. 合并系统依赖安装与全局工具安装，并清理缓存
 # 替换 Debian 源为阿里云镜像加速下载
@@ -57,13 +56,13 @@ RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
     npm config set registry ${NPM_REGISTRY} && \
     npm install -g openclaw@2026.5.5 opencode-ai@latest clawhub playwright playwright-extra puppeteer-extra-plugin-stealth @steipete/bird && \
     # 安装 bun (使用 GitHub 代理)、uv 和 qmd
-    curl -fsSL https://gh.llkk.cc/https://raw.githubusercontent.com/oven-sh/bun/main/src/cli/install.sh | BUN_INSTALL=/usr/local bash && \
+    curl -fsSL https://gh.llkk.cc/https://raw.githubusercontent.com/oven-sh/bun/main/src/cli/install.sh | GITHUB="https://gh.llkk.cc/https://github.com"  BUN_INSTALL=/usr/local bash && \
     ln -sf /usr/local/bin/python3 /usr/local/bin/python && \
     /usr/local/bin/python3 -m pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ && \
     /usr/local/bin/python3 -m pip install --no-cache-dir uv websockify && \
     npm install -g @tobilu/qmd@2.1.0 && \
     # 安装 Playwright 浏览器依赖 (使用 npmmirror 镜像加速)
-    PLAYWRIGHT_DOWNLOAD_HOST=${PLAYWRIGHT_DOWNLOAD_HOST} npx playwright install chromium --with-deps && \
+    npx playwright install chromium --with-deps && \
     # 清理 apt 缓存
     apt-get purge -y --auto-remove && \
     apt-get clean && \
