@@ -12,6 +12,10 @@ ENV BUN_INSTALL="/usr/local" \
     PATH="/usr/local/bin:$PATH" \
     DEBIAN_FRONTEND=noninteractive
 
+# npm / Playwright 镜像地址（可按需在 build 时覆盖）
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+ARG PLAYWRIGHT_DOWNLOAD_HOST=https://registry.npmmirror.com/-/binary/playwright
+
 # 1. 合并系统依赖安装与全局工具安装，并清理缓存
 # 替换 Debian 源为阿里云镜像加速下载
 RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
@@ -50,7 +54,7 @@ RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
     git config --system url."https://gh.llkk.cc/https://github.com/".insteadOf https://github.com/ && \
     git config --system url."https://gh.llkk.cc/https://github.com/".insteadOf ssh://git@github.com/ && \
     # 设置 npm 镜像并安装全局包
-    npm config set registry https://registry.npmmirror.com && \
+    npm config set registry ${NPM_REGISTRY} && \
     npm install -g openclaw@2026.5.5 opencode-ai@latest clawhub playwright playwright-extra puppeteer-extra-plugin-stealth @steipete/bird && \
     # 安装 bun (使用 GitHub 代理)、uv 和 qmd
     curl -fsSL https://gh.llkk.cc/https://raw.githubusercontent.com/oven-sh/bun/main/src/cli/install.sh | BUN_INSTALL=/usr/local bash && \
@@ -59,7 +63,7 @@ RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
     /usr/local/bin/python3 -m pip install --no-cache-dir uv websockify && \
     npm install -g @tobilu/qmd@2.1.0 && \
     # 安装 Playwright 浏览器依赖 (使用 npmmirror 镜像加速)
-    PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright npx playwright install chromium --with-deps && \
+    PLAYWRIGHT_DOWNLOAD_HOST=${PLAYWRIGHT_DOWNLOAD_HOST} npx playwright install chromium --with-deps && \
     # 清理 apt 缓存
     apt-get purge -y --auto-remove && \
     apt-get clean && \
@@ -82,7 +86,7 @@ RUN mkdir -p /home/node/.linuxbrew/Homebrew && \
     chmod -R g+rwX /home/node/.linuxbrew
 
 ARG CLAWHUB_TOKEN
-RUN npm config set registry https://registry.npmmirror.com && \
+RUN npm config set registry ${NPM_REGISTRY} && \
   if [ -n "$CLAWHUB_TOKEN" ]; then clawhub login --token "$CLAWHUB_TOKEN"; fi && \
   cd /home/node/.openclaw/extensions && \
   git clone --depth 1 -b NapCat-4.18.1 https://gh.llkk.cc/https://github.com/Daiyimo/openclaw-napcat.git napcat && \
@@ -101,7 +105,7 @@ RUN npm config set registry https://registry.npmmirror.com && \
   mv /home/node/.openclaw/extensions /home/node/.openclaw-seed/ && \
   printf '%s\n' '2026.5.5-f1' > /home/node/.openclaw-seed/extensions/.seed-version && \
   rm -rf /tmp/* /home/node/.npm /home/node/.cache
-  
+
 # 3. 最终配置
 USER root
 
