@@ -10,11 +10,13 @@ WORKDIR /app
 # 设置环境变量
 ENV BUN_INSTALL="/usr/local" \
     PATH="/usr/local/bin:$PATH" \
-    DEBIAN_FRONTEND=noninteractive
+    DEBIAN_FRONTEND=noninteractive \
+    NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node
 
 # npm / Playwright 镜像地址（可按需在 build 时覆盖）
+ARG http_proxy
+ARG https_proxy
 ARG NPM_REGISTRY=https://registry.npmmirror.com
-
 # 1. 合并系统依赖安装与全局工具安装，并清理缓存
 # 替换 Debian 源为阿里云镜像加速下载
 RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
@@ -30,7 +32,6 @@ RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
     ca-certificates \
     chromium \
     curl \
-    docker.io \
     build-essential \
     ffmpeg \
     fonts-liberation \
@@ -51,9 +52,9 @@ RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
     printf 'LANG=en_US.UTF-8\nLANGUAGE=en_US:en\nLC_ALL=en_US.UTF-8\n' > /etc/default/locale && \
     # 配置 git 使用 GitHub 加速代理（覆盖 SSH 与 HTTPS）
     git config --system url."https://gh.llkk.cc/https://github.com/".insteadOf https://github.com/ && \
-    git config --system url."https://gh.llkk.cc/https://github.com/".insteadOf ssh://git@github.com/ && \
+    git config --system url."https://gh.llkk.cc/https://github.com/".insteadOf ssh://git@github.com/
     # 设置 npm 镜像并安装全局包
-    npm config set registry ${NPM_REGISTRY} && \
+RUN npm config set registry ${NPM_REGISTRY} && \
     npm install -g openclaw@latest opencode-ai@latest clawhub playwright playwright-extra puppeteer-extra-plugin-stealth @steipete/bird && \
     # 安装 bun (使用 GitHub 代理)、uv 和 qmd
     curl -fsSL https://gh.llkk.cc/https://raw.githubusercontent.com/oven-sh/bun/main/src/cli/install.sh | GITHUB="https://gh.llkk.cc/https://github.com"  BUN_INSTALL=/usr/local bash && \
@@ -61,6 +62,7 @@ RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
     /usr/local/bin/python3 -m pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ && \
     /usr/local/bin/python3 -m pip install --no-cache-dir uv websockify && \
     npm install -g @tobilu/qmd@latest && \
+#    npx -y @tencent-weixin/openclaw-weixin-cli@latest install && \
     # 安装 Playwright 浏览器依赖 (使用 npmmirror 镜像加速)
     npx playwright install chromium --with-deps && \
     # 清理 apt 缓存
@@ -93,9 +95,10 @@ RUN npm config set registry ${NPM_REGISTRY} && \
   npm install --production && \
   timeout 300 openclaw plugins install --dangerously-force-unsafe-install -l . || true && \
   cd /home/node/.openclaw/extensions && \
-  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @soimy/dingtalk@3.6.1 || true && \
-  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @tencent-connect/openclaw-qqbot@1.7.1 || true && \
-  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @sunnoy/wecom@3.2.0 || true && \
+#  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @soimy/dingtalk@3.6.1 || true && \
+#  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @tencent-connect/openclaw-qqbot@1.7.1 || true && \
+  npx -y @larksuite/openclaw-lark install && \
+  timeout 300 openclaw plugins install --dangerously-force-unsafe-install @sunnoy/wecom || true && \
   mkdir -p /home/node/.openclaw /home/node/.openclaw-seed && \
   # 预执行安装命令（容器内需手动交互，此处仅作声明或环境准备）
   #  printf '{\n  "channels": {\n    "feishu": {\n      "enabled": false,\n      "appId": "2222222222222222",\n      "appSecret": "1111111111111111",\n      "accounts": {\n        "default": {\n          "appId": "2222222222222222",\n          "appSecret": "1111111111111111",\n          "name": "OpenClaw Bot"\n        }\n      }\n    }\n  }\n}\n' > /home/node/.openclaw/openclaw.json && \
